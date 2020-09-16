@@ -219,7 +219,7 @@ int sort_cards( int hand[], int num_cards )
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-//
+///home/jps6562/Assignment1/assign1/assign1-cmpsc311-f20.c
 // Function     : dealer_play
 // Description  : dealer decision to hit or stand (hit on anything less 
 //                than 17)
