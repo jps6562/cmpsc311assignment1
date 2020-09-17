@@ -89,40 +89,60 @@ int print_cards( int cards[], int num_cards )
 
 int shuffle_cards( int cards[], int num_cards ) 
 { 
-    // pointer to an int array
-    // malloc creates a section of memory a certian bit size
-    // memory set aside(total bits) is the size of an int(in bits) * by the number of slots we want
-    int *tempDeck;
-    tempDeck = malloc( sizeof(int) * num_cards);
+    
+    int i;
+    //modern method
+    for( i = num_cards - 1; i > 1; i--) 
+    {
+        int j = getRandomValue( 0, i );
+
+        int temp = cards[ i ];
+        cards[ i ] = cards[ j ];
+        cards[j] = temp;
+    }
+
+    //could not implement original
+
+
+    //int tempDeck[NUM_CARDS];
 
     //gets rid of garbage data in tempDeck array
-    int i;
-    for( i = 0; i < num_cards; i++)
+
+    /*for( i = 0; i < NUM_CARDS; i++)
     {
         tempDeck[i] = 0;
-    }
+    }*/
+    
 
 
     // takes random card from given deck and assigns
     // logic--------- 
     
-    for( i = 0; i < num_cards; i++ )
+
+
+    /*for( i = 0; i < num_cards; i++ )
     {
         int index = 0, count = 0, countTo = 0;
-        countTo = ( (getRandomValue(  0,  num_cards - i) ) );
+        
+        //reverses deck correctly with
+        // countTo = (num_ cards - i );
+        //getRandomValue( 0, (num_cards - i - 2 ))
+
+        countTo = ( getRandomValue( 0, (num_cards - i - 1 ))  ) ;
 
         while( count < countTo )
         {
-            index++;
-            if( cards[ index ] < 52 )
+            
+            if( cards[ index ]  < 52 )
             {
                 count++;
             }
+            index++;
         }
 
         tempDeck[i] = cards[index];
-        cards[index] = NUM_CARDS + 1 ;
-    }
+        cards[index] = NUM_CARDS + 10 ;
+    }*/
 
 
 
@@ -145,16 +165,13 @@ int shuffle_cards( int cards[], int num_cards )
         
     }*/
 
-
-
-
-    for( i = 0; i < num_cards; i++ )
-    {
+    /*for( i = 0; i < num_cards; i++ )
+    { 
+        //printf("%d", tempDeck[i]);
+        //printf(" ");
         cards[i] = tempDeck[i];
-    }
-
-    free(tempDeck);
-
+    }*/
+    //printf("\n");
     return 0;
 }
 
@@ -176,7 +193,7 @@ int hand_value( int cards[], int num_cards )
     for( i = 0; i < num_cards; i++ )
     {
         aceCheck = card_faces[ cards[i] % 13 ];
-        if ( handValue > WIN_AMOUNT) && (aceCheck == 11)) )
+        if ( ( handValue > WIN_AMOUNT) && (aceCheck == 11) )
         {
             handValue += aceCheck - 10;
         }
@@ -278,16 +295,115 @@ int player_play( int hand[], int num_cards, int dealer_card )
 
 int play_hand( int deck[], int num_cards, float *player_money ) 
 {
-    printf("\n---- New hand -----");
+    //a
+    printf("\n---- New hand -----\n");
     shuffle_cards( deck, num_cards);
-    int playerHand[MAX_CARDS], dealerHand[MAX_CARDS];
-    int i;
-    for( i = 0; i < 2; i++)
+
+    //b
+    //deal first two cards
+    int playerHand[NUM_CARDS], dealerHand[NUM_CARDS];
+    playerHand[0] = deck[0];
+    dealerHand[0] = deck[1];
+    playerHand[1] = deck[2];
+    dealerHand[1] = deck[3];
+    int pCardNum = 2, dCardNum = 2, deckNum = 4;;
+
+    printf( "Dealer cards : ");
+    print_card( dealerHand[0] ); 
+    printf( "  XX \n" );
+
+    printf( "Player Cards : ");
+    print_cards( playerHand, pCardNum );  
+    printf("\n");
+
+    //c
+    //d
+    if( hand_value( playerHand, pCardNum ) == 21 )
     {
-        
+        printf( "Player has Blackjack!, wins $7.50 \n" );
+        *player_money = *player_money + (float)7.5; 
+        return 1;
     }
-    
-    return 0;
+
+    //e
+    int count = 0;
+    do
+    {
+        if( player_play( playerHand, pCardNum, dealerHand[0] ) == 1) 
+        {
+            playerHand[ count + pCardNum ] = deck[deckNum];
+            pCardNum++;
+            deckNum++;
+            printf( "Player Hit (" );
+            printf( "%d", hand_value(playerHand, pCardNum) );
+            printf( ") : ");
+            print_cards( playerHand, pCardNum ); 
+        }
+        else if ( player_play( playerHand, pCardNum, dealerHand[0] ) == 0 )
+        {
+            printf( "Player Stays (" );
+            printf( "%d", hand_value(playerHand, pCardNum) );
+            printf( ") : ");
+            print_cards( playerHand, pCardNum ); 
+            break;
+        }
+        
+        
+    }while ( hand_value(playerHand, pCardNum) < 21);
+
+    if (hand_value(playerHand, pCardNum) > 21)
+    {
+        printf("Player BUSTS ... dealer wins!\n\n");
+        *player_money -=5;
+    }
+
+    //f
+    //g
+    count = 0;
+    do
+    {
+        if( dealer_play(dealerHand, dCardNum ) == 1) 
+        {
+            dealerHand[ count + dCardNum ] = deck[deckNum];
+            dCardNum++;
+            deckNum++;
+            printf( "Dealer Hit (" );
+            printf( "%d", hand_value(dealerHand, dCardNum) );
+            printf( ") : ");
+            print_cards( dealerHand, dCardNum ); 
+        }
+        else if ( dealer_play( dealerHand, dCardNum ) == 0)
+        {
+            printf( "Dealer Stay (" );
+            printf( "%d", hand_value(dealerHand, dCardNum) );
+            printf( ") : ");
+            print_cards( dealerHand, dCardNum ); 
+            break;
+        }
+        
+        
+    }while ( hand_value(dealerHand, dCardNum) < 21);
+
+    if (hand_value(dealerHand, dCardNum) > 21)
+    {
+        printf("Dealer BUSTS ... player wins!\n\n");
+        *player_money += 5;
+    }
+
+    //h
+    if( hand_value(playerHand, pCardNum) > hand_value(dealerHand, dCardNum))
+    {
+        *player_money += 5;
+        printf( "Player Wins!\n");
+        return 1;
+    }
+    else
+    {
+        *player_money -= 5; 
+        printf( "Dealer Wins!\n");
+        return 0;
+    }
+
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -300,7 +416,29 @@ int play_hand( int deck[], int num_cards, float *player_money )
 // Outputs      : 0 always
 
 int show_player_money_histogram( float money_rounds[], int last_round ) 
-{
+{ 
+    int i, j;
+
+    printf("                                                PLAYER CASH BY ROUND\n");
+    printf("     -----------------------------------------------------------------------------------------------------"); 
+    printf("\n");
+    for ( i = 0; i < 40; i++)
+    {
+        printf("%5d", (200 - 5*i) );
+        printf(" |");
+        for( j = 0; j < 101; j++)
+        {
+            if( money_rounds[j] >= (200 - 5*i) )
+            {
+                printf("X");
+            }
+            else
+            {
+                printf(".");
+            }
+        }
+        printf("|\n");
+    }
     return 0;
 }
 
@@ -316,7 +454,7 @@ int show_player_money_histogram( float money_rounds[], int last_round )
 
 int main( int argc, char **argv ) 
 {
-
+    getRandomValue(0,0);
     /* Local variables */
     int cmp311_deck[NUM_CARDS];  // This is the deck of cards
 
@@ -336,16 +474,50 @@ int main( int argc, char **argv )
     /* Step #4 - shuffle the deck */
     shuffle_cards( cmp311_deck, NUM_CARDS);
     /* Step #5 - print the shuffled deck of cards */
+
+            /*printf("Made it here\n");
+        for(i = 0; i < NUM_CARDS; i++)
+        {
+            printf("%d",cmp311_deck[i]); 
+            printf(" ");
+        }
+        printf("\n");*/
     print_cards( cmp311_deck, NUM_CARDS );
     /* Step #6 - sort the cards */
     sort_cards( cmp311_deck, NUM_CARDS );
     /* Step #7 - print the sorted deck of cards */
     print_cards( cmp311_deck, NUM_CARDS );
     /* Step #9 - deal the hands */
-
+        float player_money = 100; 
+    float money_rounds[100];
+    int count = 0, winTracker = 0;
+    do
+    {
+        winTracker += play_hand(cmp311_deck, NUM_CARDS, &player_money);
+        money_rounds[count] = player_money; 
+        printf("After hand ");
+        printf("%d", count + 1 );
+        printf(" player has ");
+        printf("%.2f", player_money);
+        printf("$ left.\n");
+        count++;
+    }while( player_money >= 5 && count < 100 );
     /* Step 10 show historgrapm */
 
+    printf("Blackjack done - player won ");
+    printf("%d", winTracker);
+    printf(" out of ");
+    printf("%d", (count + 1) );
+    printf(" hands.\n");
+
+    show_player_money_histogram( money_rounds, (count + 1) );
+    printf("\n          1         2         3         4         5         6         7         8         9         10\n");
+    
     /* Exit the program successfully */
+
+    
+
+
     printf( "\n\nCMPSC311 - Assignment #1 - Spring 2020 Complete.\n" );
     return( 0 );
 }
